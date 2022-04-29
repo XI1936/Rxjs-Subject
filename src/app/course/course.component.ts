@@ -19,8 +19,9 @@ import {
   withLatestFrom,
   concatAll,
   shareReplay,
+  first,
 } from "rxjs/operators";
-import { merge, fromEvent, Observable, concat } from "rxjs";
+import { merge, fromEvent, Observable, concat, forkJoin } from "rxjs";
 import { Lesson } from "../model/lesson";
 import { createHttpObservable } from "../common/util";
 import { Store } from "../common/store.service";
@@ -44,8 +45,22 @@ export class CourseComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.courseId = this.route.snapshot.params["id"];
 
-    this.course$ = this.store.selectedStore(this.courseId);
-    //createHttpObservable(`/api/courses/${this.courseId}`);
+    this.course$ = this.store.selectedStore(this.courseId).pipe(
+      first()
+    );
+    //Using first Oprator as the this.course$(observable) will never complete hence 
+    //forkJoin wil never emit as it emits only all the observabe are comletes 
+    //We can use take() oprator as wll take(1) , take(2) 
+    // forkJoin(this.course$,this.loadLessons()).subscribe((resp)=>console.log("ForkJoin ---"));
+   
+    //-----------------------Second Approach-withLatestFrom()-----
+    this.loadLessons().pipe(
+      withLatestFrom(this.course$)
+    ).subscribe(
+      (resp)=>console.log("withLatestFrom ---")
+    )
+
+    
   }
 
   ngAfterViewInit() {
