@@ -29,6 +29,11 @@ export class Store {
     return this.filterByCategory("ADVANCED");
   }
 
+  selectedStore(id: number) {
+    return this.Courses$.pipe(
+      map((courses) => courses.find((course) => course.id == id))
+    );
+  }
   filterByCategory(category: string) {
     return this.Courses$.pipe(
       map((courses) => courses.filter((course) => course.category == category))
